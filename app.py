@@ -21,8 +21,10 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
 # Configure uploads
-UPLOAD_FOLDER = './uploads'  # Changed to relative path for better performance
-RESULTS_FOLDER = './results'  # For storing processed results
+# Use /tmp directory for Vercel serverless environment
+is_vercel = os.environ.get('VERCEL', 'false') == 'true'
+UPLOAD_FOLDER = '/tmp/uploads' if is_vercel else './uploads'
+RESULTS_FOLDER = '/tmp/results' if is_vercel else './results'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 # Ensure directories exist
@@ -248,6 +250,8 @@ def cleanup_old_files():
         except Exception as e:
             app.logger.error(f"Error in cleanup process: {e}")
 
-# Start the background cleanup thread
-cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
-cleanup_thread.start()
+# Start the background cleanup thread only in non-Vercel environments
+# Vercel uses serverless functions which don't support long-running processes
+if not is_vercel:
+    cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
+    cleanup_thread.start()
