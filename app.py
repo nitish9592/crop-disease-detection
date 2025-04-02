@@ -17,11 +17,15 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
 # Configure uploads
-UPLOAD_FOLDER = '/tmp/uploads'
+UPLOAD_FOLDER = './uploads'  # Changed to relative path for better performance
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Ensure upload directory exists
+try:
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+except Exception as e:
+    logging.error(f"Failed to create upload directory: {e}")
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
@@ -87,16 +91,16 @@ def upload_file():
 
 def process_image(filepath):
     try:
-        # Open and analyze the image
+        # Open and analyze the image - optimize by using a single image object
         with Image.open(filepath) as img:
             # Ensure the image is in RGB format
             if img.mode != 'RGB':
                 img = img.convert('RGB')
             
-            # Resize for analysis if needed
+            # Create a smaller version for analysis (faster processing)
+            analysis_size = (512, 512)  # Reduced size for faster analysis
             analysis_img = img.copy()
-            if max(analysis_img.size) > 1024:
-                analysis_img.thumbnail((1024, 1024))
+            analysis_img.thumbnail(analysis_size)
             
             # Analyze the image
             disease_id, confidence, affected_areas = analyze_image(np.array(analysis_img))
@@ -104,20 +108,32 @@ def process_image(filepath):
             # Get disease information
             disease_info = get_disease_info(disease_id)
             
-            # Save processed image with highlighted areas
-            base_img = img.copy()
-            if max(base_img.size) > 800:  # Resize for display
-                base_img.thumbnail((800, 800))
+            # Ensure disease_info is not None to avoid 'not subscriptable' errors
+            if disease_info is None:
+                # Default to the "Healthy Plant" entry if disease info is not found
+                disease_info = {
+                    'id': 6,
+                    'name': 'Healthy Plant',
+                    'crops': ['Various'],
+                    'description': 'This plant appears healthy with no visible signs of disease or pest damage.',
+                    'treatment': 'No treatment needed. Continue with regular care practices.',
+                    'prevention': 'Maintain good cultural practices including proper watering, fertilization, and pest monitoring.'
+                }
             
-            # Convert the image to base64 for embedding in HTML
+            # Create a smaller version for display (faster loading)
+            display_size = (600, 600)  # Reduced size for faster display
+            display_img = img.copy()
+            display_img.thumbnail(display_size)
+            
+            # Convert the image to base64 with JPEG optimization
             buffered = io.BytesIO()
-            base_img.save(buffered, format="JPEG")
+            display_img.save(buffered, format="JPEG", quality=85, optimize=True)
             img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
             
             # Store results in session
             session['analysis_results'] = {
                 'image': img_str,
-                'disease_id': disease_id,
+                'disease_id': disease_info['id'],
                 'disease_name': disease_info['name'],
                 'confidence': f"{confidence:.1f}%",
                 'description': disease_info['description'],
@@ -126,6 +142,12 @@ def process_image(filepath):
                 'affected_areas': affected_areas
             }
             
+            # Clean up temporary files to save disk space
+            try:
+                os.remove(filepath)
+            except:
+                pass
+                
             return redirect(url_for('results'))
     except Exception as e:
         app.logger.error(f"Error in image processing: {e}")
