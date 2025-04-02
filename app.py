@@ -1,6 +1,10 @@
 import os
 import logging
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+import uuid
+import time
+import threading
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, send_file
 from werkzeug.utils import secure_filename
 import numpy as np
 from PIL import Image
@@ -18,16 +22,19 @@ app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
 # Configure uploads
 UPLOAD_FOLDER = './uploads'  # Changed to relative path for better performance
+RESULTS_FOLDER = './results'  # For storing processed results
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# Ensure upload directory exists
+# Ensure directories exist
 try:
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
+    for folder in [UPLOAD_FOLDER, RESULTS_FOLDER]:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
 except Exception as e:
-    logging.error(f"Failed to create upload directory: {e}")
+    logging.error(f"Failed to create directory: {e}")
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['RESULTS_FOLDER'] = RESULTS_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload size
 
 def allowed_file(filename):
@@ -130,14 +137,17 @@ def process_image(filepath):
             display_img = img.copy()
             display_img.thumbnail(display_size)
             
-            # Convert the image to base64 with JPEG optimization
-            buffered = io.BytesIO()
-            display_img.save(buffered, format="JPEG", quality=85, optimize=True)
-            img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+            # Generate a unique ID for this analysis
+            result_id = str(uuid.uuid4())
             
-            # Store results in session
+            # Save the processed image to disk instead of session
+            result_filename = f"{result_id}.jpg"
+            result_path = os.path.join(app.config['RESULTS_FOLDER'], result_filename)
+            display_img.save(result_path, format="JPEG", quality=85, optimize=True)
+            
+            # Store minimal results in session (no image data)
             session['analysis_results'] = {
-                'image': img_str,
+                'result_id': result_id,
                 'disease_id': disease_info['id'],
                 'disease_name': disease_info['name'],
                 'confidence': f"{confidence:.1f}%",
@@ -168,6 +178,19 @@ def results():
     results = session['analysis_results']
     return render_template('results.html', results=results)
 
+@app.route('/results/image/<result_id>')
+def result_image(result_id):
+    # Validate the result_id to prevent directory traversal
+    if not result_id or '..' in result_id or '/' in result_id:
+        return "Invalid result ID", 400
+        
+    image_path = os.path.join(app.config['RESULTS_FOLDER'], f"{result_id}.jpg")
+    
+    if not os.path.exists(image_path):
+        return "Image not found", 404
+        
+    return send_file(image_path, mimetype='image/jpeg')
+
 @app.route('/browse')
 def browse_diseases():
     return render_template('browse_diseases.html', diseases=common_diseases)
@@ -189,3 +212,42 @@ def server_error(e):
     app.logger.error(f"Server error: {e}")
     flash('An unexpected error occurred. Please try again later.', 'error')
     return redirect(url_for('index'))
+
+# Background cleanup process
+def cleanup_old_files():
+    """Clean up old image files to prevent disk space issues"""
+    while True:
+        try:
+            # Wait for 1 hour between cleanups
+            time.sleep(3600)
+            
+            now = datetime.now()
+            count = 0
+            
+            # Clean up results folder (keep files for 24 hours)
+            for filename in os.listdir(app.config['RESULTS_FOLDER']):
+                filepath = os.path.join(app.config['RESULTS_FOLDER'], filename)
+                
+                # Skip if not a file
+                if not os.path.isfile(filepath):
+                    continue
+                    
+                # Get file modification time
+                file_time = datetime.fromtimestamp(os.path.getmtime(filepath))
+                
+                # Remove if older than 24 hours
+                if now - file_time > timedelta(hours=24):
+                    try:
+                        os.remove(filepath)
+                        count += 1
+                    except Exception as e:
+                        app.logger.error(f"Error removing old file {filepath}: {e}")
+            
+            app.logger.info(f"Cleanup complete. Removed {count} old image files.")
+            
+        except Exception as e:
+            app.logger.error(f"Error in cleanup process: {e}")
+
+# Start the background cleanup thread
+cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
+cleanup_thread.start()

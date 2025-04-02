@@ -15,7 +15,7 @@
                 <div class="row">
                     <div class="col-lg-6 mb-4 mb-lg-0">
                         <div class="image-result-container position-relative">
-                            <img src="data:image/jpeg;base64,{{ results.image }}" alt="Analyzed plant image" class="img-fluid rounded analyzed-image">
+                            <img src="{{ url_for('result_image', result_id=results.result_id) }}" alt="Analyzed plant image" class="img-fluid rounded analyzed-image">
                             
                             <!-- Affected Areas Overlay -->
                             <div id="affected-areas-overlay" class="position-absolute top-0 start-0 w-100 h-100">
