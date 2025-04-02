@@ -1,3 +1,17 @@
+
+from http.client import HTTPException
+
+# Vercel serverless handler
+def handler(request):
+    try:
+        return app(request)
+    except HTTPException as e:
+        return e
+    except Exception as e:
+        app.logger.error(f"Unhandled error: {e}")
+        return "Internal Server Error", 500
+
+
 import os
 import logging
 import uuid
