@@ -1,78 +1,58 @@
-# Plant Disease Detection System
+# Crop Disease Detection System
 
-A web-based application that analyzes plant images to identify diseases and provide treatment recommendations.
+A web-based crop disease detection system that analyzes plant images to identify diseases and provide information about treatment and prevention.
 
 ## Features
 
-- **Image Upload**: Upload plant images for analysis
-- **Camera Capture**: Take photos directly from your device camera
-- **Disease Detection**: Identify plant diseases with confidence levels
-- **Treatment Information**: Get detailed information about detected diseases
-- **Prevention Tips**: Learn how to prevent plant diseases
-- **Disease Library**: Browse common plant diseases and their treatments
+- Upload or capture plant images for disease detection
+- Real-time image analysis with disease identification
+- Detailed information on detected diseases with treatment recommendations
+- Browse common plant diseases library
+- Responsive design for mobile and desktop use
 
-## Technologies Used
+## Technology Stack
 
-- **Backend**: Flask (Python)
-- **Frontend**: HTML, CSS, JavaScript, Bootstrap 5
-- **Image Processing**: NumPy, Pillow
-- **UI Design**: Clean, responsive interface with accessibility features
+- Python/Flask backend
+- HTML, CSS, JavaScript for the frontend
+- Bootstrap for responsive design
+- Pillow and NumPy for image processing
 
-## Setup and Installation
+## Installation and Setup
 
-### Local Development
+1. Clone the repository:
+```
+git clone https://github.com/nitish9592/crop-disease-detection.git
+cd crop-disease-detection
+```
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+2. Install the required dependencies:
+```
+pip install -r requirements.txt
+```
+
 3. Run the application:
-   ```
-   python main.py
-   ```
+```
+python main.py
+```
+
 4. Open your browser and navigate to `http://localhost:5000`
 
-### Vercel Deployment
+## Usage
 
-1. Fork or clone this repository to your GitHub account
-2. Create a new project in Vercel and connect your GitHub repository
-3. Set deployment settings:
-   - Framework: Other
-   - Build Command: (leave blank)
-   - Output Directory: (leave blank)
-4. Add Environment Variable:
-   - Key: `SESSION_SECRET`
-   - Value: (a secure random string)
-5. Click "Deploy"
-
-#### Notes on Vercel Serverless Functions
-
-The application is adapted to work in Vercel's serverless environment with the following considerations:
-- File storage uses `/tmp` directory which has limitations on space and persistence
-- Long-running background processes are disabled in serverless mode
-- Session data should be kept minimal due to size constraints
-- Cold starts may cause initial latency for first-time users
+1. Upload a plant image using the file uploader or capture one using your device camera
+2. The system will analyze the image and identify any diseases
+3. Review the analysis results with highlighted affected areas
+4. Get information about the detected disease and treatment recommendations
+5. Browse the disease library to learn about common plant diseases
 
 ## Project Structure
 
-- `app.py` - Main Flask application with routes and controllers
-- `disease_detector.py` - Image analysis and disease detection logic
-- `main.py` - Application entry point
-- `models.py` - Data models (if using a database)
-- `templates/` - HTML templates for the application
-- `static/` - CSS, JavaScript and image assets
-- `uploads/` - Temporary storage for uploaded images
-- `results/` - Storage for processed analysis results
+- `app.py`: Main Flask application with routes
+- `disease_detector.py`: Contains functions for plant disease detection
+- `main.py`: Entry point for the application
+- `templates/`: HTML templates for the web interface
+- `static/`: Static assets (CSS, JavaScript, images)
 
-## Screenshot
+## License
 
-![Plant Disease Detection System](https://example.com/screenshot.jpg)
-
-## Future Enhancements
-
-- Integration with a real machine learning model for more accurate disease detection
-- User accounts to track plant health history
-- Mobile application version
-- Expanded disease database
-- Integration with weather APIs for contextual advice
+MIT License
