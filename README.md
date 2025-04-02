@@ -20,6 +20,8 @@ A web-based application that analyzes plant images to identify diseases and prov
 
 ## Setup and Installation
 
+### Local Development
+
 1. Clone the repository
 2. Install dependencies:
    ```
@@ -30,6 +32,27 @@ A web-based application that analyzes plant images to identify diseases and prov
    python main.py
    ```
 4. Open your browser and navigate to `http://localhost:5000`
+
+### Vercel Deployment
+
+1. Fork or clone this repository to your GitHub account
+2. Create a new project in Vercel and connect your GitHub repository
+3. Set deployment settings:
+   - Framework: Other
+   - Build Command: (leave blank)
+   - Output Directory: (leave blank)
+4. Add Environment Variable:
+   - Key: `SESSION_SECRET`
+   - Value: (a secure random string)
+5. Click "Deploy"
+
+#### Notes on Vercel Serverless Functions
+
+The application is adapted to work in Vercel's serverless environment with the following considerations:
+- File storage uses `/tmp` directory which has limitations on space and persistence
+- Long-running background processes are disabled in serverless mode
+- Session data should be kept minimal due to size constraints
+- Cold starts may cause initial latency for first-time users
 
 ## Project Structure
 
