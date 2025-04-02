@@ -35,7 +35,12 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        app.logger.debug("Rendering index template")
+        return render_template('index.html')
+    except Exception as e:
+        app.logger.error(f"Error rendering index template: {e}")
+        return f"Error: {e}", 500
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
