@@ -1,0 +1,254 @@
+/* Main Color Variables */
+:root {
+    --color-healthy: #2ECC71;
+    --color-disease: #E74C3C;
+    --color-background: #F5F7FA;
+    --color-text: #2C3E50;
+    --color-highlight: #F1C40F;
+    --color-light-grey: #ECF0F1;
+    --color-dark-grey: #7F8C8D;
+    --color-border: #BDC3C7;
+    --color-primary: #3498DB;
+    --color-secondary: #9B59B6;
+    --spacing-base: 16px;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+}
+
+.main-container {
+    flex: 1;
+    padding-bottom: var(--spacing-base);
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* Header & Navigation */
+.navbar {
+    padding: 0.8rem 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.logo-healthy {
+    color: var(--color-healthy);
+}
+
+.logo-disease {
+    color: var(--color-disease);
+}
+
+/* Card Styles */
+.card {
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    margin-bottom: var(--spacing-base);
+}
+
+.card-header {
+    background-color: var(--color-primary);
+    color: white;
+    padding: var(--spacing-base);
+    border-bottom: none;
+}
+
+.card-title {
+    margin-bottom: 0;
+    font-weight: 700;
+}
+
+.card-body {
+    padding: var(--spacing-base);
+}
+
+/* Upload and Camera Cards */
+.upload-card, .capture-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px dashed var(--color-border);
+    min-height: 200px;
+}
+
+.upload-card:hover, .capture-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+}
+
+.upload-icon, .camera-icon, .step-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(46, 204, 113, 0.1);
+    margin-bottom: var(--spacing-base);
+}
+
+.custom-file-upload {
+    width: 100%;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: #2980B9;
+    border-color: #2980B9;
+}
+
+.btn-success {
+    background-color: var(--color-healthy);
+    border-color: var(--color-healthy);
+}
+
+.btn-success:hover {
+    background-color: #27AE60;
+    border-color: #27AE60;
+}
+
+.btn-danger {
+    background-color: var(--color-disease);
+    border-color: var(--color-disease);
+}
+
+.btn-danger:hover {
+    background-color: #C0392B;
+    border-color: #C0392B;
+}
+
+/* Results Page */
+.image-result-container {
+    position: relative;
+    margin-bottom: var(--spacing-base);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.analyzed-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.affected-area-highlight {
+    position: absolute;
+    border: 3px solid var(--color-disease);
+    border-radius: 4px;
+    background-color: rgba(231, 76, 60, 0.2);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background-color 0.2s;
+}
+
+.affected-area-highlight:hover {
+    background-color: rgba(231, 76, 60, 0.4);
+}
+
+.disease-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* Camera Modal */
+.camera-container {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+#camera-preview {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background-color: var(--color-light-grey);
+}
+
+#captured-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Disease Library */
+.disease-item {
+    border-radius: 8px;
+    transition: box-shadow 0.2s;
+}
+
+.disease-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crop-badge {
+    font-size: 0.75rem;
+    background-color: var(--color-dark-grey);
+}
+
+/* Feedback Section */
+.feedback-section {
+    border-radius: 8px;
+    background-color: var(--color-light-grey);
+}
+
+.feedback-btn {
+    transition: all 0.2s;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 767.98px) {
+    .card-header {
+        padding: 12px;
+    }
+    
+    .card-body {
+        padding: 12px;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .upload-icon, .camera-icon, .step-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .step-icon svg {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Footer */
+.footer {
+    margin-top: auto;
+    background-color: var(--color-light-grey);
+    padding: var(--spacing-base) 0;
+    border-top: 1px solid var(--color-border);
+}

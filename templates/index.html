@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Crop Disease Detection - Upload Image</title>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">Crop Disease Detection</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead text-center mb-4">
+                    Upload or capture a photo of your plant to identify diseases and get treatment recommendations
+                </p>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card upload-card mb-3 h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <div class="upload-icon mb-3">
+                                    <svg width="64" height="64" fill="none" stroke="#2ECC71" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m4-5 5-5 5 5m-5-5v12"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="h5 mb-3">Upload Plant Image</h3>
+                                <form id="upload-form" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="d-flex flex-column align-items-center">
+                                    <div class="form-group w-100">
+                                        <div class="custom-file-upload">
+                                            <input type="file" name="file" id="file-upload" class="form-control" accept="image/png, image/jpeg, image/jpg" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mt-3">
+                                        <i class="fas fa-upload me-2"></i>Upload and Analyze
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card capture-card h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <div class="camera-icon mb-3">
+                                    <svg width="64" height="64" fill="none" stroke="#2ECC71" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <h3 class="h5 mb-3">Capture Photo</h3>
+                                <button id="camera-btn" class="btn btn-primary">
+                                    <i class="fas fa-camera me-2"></i>Open Camera
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Camera Capture Modal -->
+                <div class="modal fade" id="cameraModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Capture Plant Image</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="camera-container">
+                                    <video id="camera-preview" autoplay playsinline></video>
+                                    <canvas id="capture-canvas" style="display:none;"></canvas>
+                                    <div id="captured-image-container" style="display:none;">
+                                        <img id="captured-image" src="" alt="Captured image">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" id="switch-camera-btn" class="btn btn-secondary">
+                                    <i class="fas fa-sync me-2"></i>Switch Camera
+                                </button>
+                                <button type="button" id="capture-btn" class="btn btn-primary">
+                                    <i class="fas fa-camera me-2"></i>Capture
+                                </button>
+                                <button type="button" id="retake-btn" class="btn btn-secondary" style="display:none;">
+                                    <i class="fas fa-redo me-2"></i>Retake
+                                </button>
+                                <button type="button" id="use-image-btn" class="btn btn-success" style="display:none;">
+                                    <i class="fas fa-check me-2"></i>Use Image
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="how-it-works mt-4">
+                    <h3 class="h4 text-center mb-4">How It Works</h3>
+                    <div class="row text-center">
+                        <div class="col-md-4 mb-3">
+                            <div class="step-icon mb-3">
+                                <svg width="48" height="48" fill="none" stroke="#2ECC71" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </div>
+                            <h4 class="h6">1. Upload Image</h4>
+                            <p class="small">Take a clear photo of the affected plant part (leaf, stem, fruit)</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="step-icon mb-3">
+                                <svg width="48" height="48" fill="none" stroke="#F1C40F" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" x2="12" y1="8" y2="12"></line>
+                                    <line x1="12" x2="12.01" y1="16" y2="16"></line>
+                                </svg>
+                            </div>
+                            <h4 class="h6">2. Analysis</h4>
+                            <p class="small">Our system analyzes the image to identify diseases and affected areas</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="step-icon mb-3">
+                                <svg width="48" height="48" fill="none" stroke="#E74C3C" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <h4 class="h6">3. Results</h4>
+                            <p class="small">Get information about the detected disease, treatment options and prevention</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tips mt-4 p-3 bg-light rounded">
+                    <h4 class="h5">Tips for Better Results:</h4>
+                    <ul class="mb-0">
+                        <li>Take photos in good lighting</li>
+                        <li>Ensure the affected area is clearly visible</li>
+                        <li>Include multiple angles for more accurate analysis</li>
+                        <li>Keep the plant in focus and minimize background distractions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for camera capture submission -->
+<form id="camera-capture-form" action="{{ url_for('upload_file') }}" method="post" style="display:none;">
+    <input type="hidden" name="image_data" id="image-data-input">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/image_processor.js') }}"></script>
+{% endblock %}

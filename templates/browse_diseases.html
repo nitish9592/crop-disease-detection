@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Disease Library</title>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">Disease Library</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead text-center mb-4">
+                    Browse common crop diseases, their symptoms, and treatment options
+                </p>
+
+                <div class="filter-controls mb-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" id="disease-search" class="form-control" placeholder="Search diseases...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                                <select id="crop-filter" class="form-select">
+                                    <option value="">All Crops</option>
+                                    <option value="Potato">Potato</option>
+                                    <option value="Tomato">Tomato</option>
+                                    <option value="Wheat">Wheat</option>
+                                    <option value="Barley">Barley</option>
+                                    <option value="Grape">Grape</option>
+                                    <option value="Cucumber">Cucumber</option>
+                                    <option value="Apple">Apple</option>
+                                    <option value="Corn">Corn</option>
+                                    <option value="Maize">Maize</option>
+                                    <option value="Orange">Citrus</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="disease-list">
+                    <div class="accordion" id="diseaseAccordion">
+                        {% for disease in diseases %}
+                            {% if disease.id != 6 %}  <!-- Skip the "Healthy Plant" entry -->
+                            <div class="accordion-item disease-item mb-3 border" 
+                                 data-disease-name="{{ disease.name|lower }}" 
+                                 data-crops="{{ disease.crops|join(' ')|lower }}">
+                                <h2 class="accordion-header" id="heading{{ disease.id }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapse{{ disease.id }}" aria-expanded="false" 
+                                            aria-controls="collapse{{ disease.id }}">
+                                        <div class="d-flex justify-content-between w-100 align-items-center pe-3">
+                                            <span>{{ disease.name }}</span>
+                                            <span class="badge bg-secondary small crop-badge">
+                                                Affects: {{ disease.crops|join(', ') }}
+                                            </span>
+                                        </div>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ disease.id }}" class="accordion-collapse collapse" 
+                                     aria-labelledby="heading{{ disease.id }}" data-bs-parent="#diseaseAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <h4 class="h6 mb-2">Description</h4>
+                                                <p>{{ disease.description }}</p>
+
+                                                <h4 class="h6 mb-2 mt-3">Treatment</h4>
+                                                <p>{{ disease.treatment }}</p>
+
+                                                <h4 class="h6 mb-2 mt-3">Prevention</h4>
+                                                <p>{{ disease.prevention }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="no-results" class="alert alert-info text-center mt-4" style="display: none;">
+                    No diseases match your search criteria. Please try different keywords or filters.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Search and filter functionality
+    const searchInput = document.getElementById('disease-search');
+    const cropFilter = document.getElementById('crop-filter');
+    const diseaseItems = document.querySelectorAll('.disease-item');
+    const noResults = document.getElementById('no-results');
+
+    function filterDiseases() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const cropFilterValue = cropFilter.value.toLowerCase();
+        
+        let visibleCount = 0;
+        
+        diseaseItems.forEach(item => {
+            const diseaseName = item.getAttribute('data-disease-name');
+            const crops = item.getAttribute('data-crops');
+            
+            const matchesSearch = !searchTerm || diseaseName.includes(searchTerm);
+            const matchesCrop = !cropFilterValue || crops.includes(cropFilterValue);
+            
+            if (matchesSearch && matchesCrop) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Show "no results" message if needed
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', filterDiseases);
+    cropFilter.addEventListener('change', filterDiseases);
+</script>
+{% endblock %}

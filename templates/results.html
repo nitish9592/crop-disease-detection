@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Disease Detection Results</title>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">Analysis Results</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <div class="image-result-container position-relative">
+                            <img src="data:image/jpeg;base64,{{ results.image }}" alt="Analyzed plant image" class="img-fluid rounded analyzed-image">
+                            
+                            <!-- Affected Areas Overlay -->
+                            <div id="affected-areas-overlay" class="position-absolute top-0 start-0 w-100 h-100">
+                                {% for area in results.affected_areas %}
+                                <div class="affected-area-highlight" 
+                                     style="left: {{ area[0] }}px; top: {{ area[1] }}px; width: {{ area[2] }}px; height: {{ area[3] }}px;"
+                                     data-bs-toggle="tooltip" 
+                                     title="Affected Area">
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="diagnosis-result mb-4">
+                            {% if results.disease_id != 6 %}
+                            <div class="alert alert-danger">
+                                <h3 class="h5 mb-2">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    Disease Detected
+                                </h3>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="disease-name">{{ results.disease_name }}</span>
+                                    <span class="badge bg-danger">{{ results.confidence }} confidence</span>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-success">
+                                <h3 class="h5 mb-2">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Healthy Plant
+                                </h3>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="disease-name">No disease detected</span>
+                                    <span class="badge bg-success">{{ results.confidence }} confidence</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="disease-info">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h4 class="h6 mb-0">Description</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ results.description }}</p>
+                                </div>
+                            </div>
+
+                            {% if results.disease_id != 6 %}
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h4 class="h6 mb-0">Treatment Recommendations</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ results.treatment }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h4 class="h6 mb-0">Prevention</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ results.prevention }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions mt-4 text-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Analyze Another Image
+                    </a>
+                    {% if results.disease_id != 6 %}
+                    <a href="{{ url_for('browse_diseases') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-book-medical me-2"></i>Disease Library
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="feedback-section mt-4 p-3 bg-light rounded">
+                    <h4 class="h5 mb-3">Was this analysis helpful?</h4>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-success feedback-btn" data-feedback="helpful">
+                            <i class="fas fa-thumbs-up me-1"></i> Yes, it was accurate
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger feedback-btn" data-feedback="not-helpful">
+                            <i class="fas fa-thumbs-down me-1"></i> No, it wasn't accurate
+                        </button>
+                    </div>
+                    <div id="feedback-thanks" class="mt-2 text-success" style="display: none;">
+                        Thank you for your feedback! This helps improve our system.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+    
+    // Handle feedback buttons
+    document.querySelectorAll('.feedback-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            // In a real app, we would send this feedback to the server
+            // For now, just show the thank you message
+            document.getElementById('feedback-thanks').style.display = 'block';
+            
+            // Disable all feedback buttons
+            document.querySelectorAll('.feedback-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('btn-outline-success', 'btn-outline-danger');
+                btn.classList.add('btn-light');
+            });
+            
+            // Highlight the selected button
+            this.classList.remove('btn-light');
+            if (this.getAttribute('data-feedback') === 'helpful') {
+                this.classList.add('btn-success');
+            } else {
+                this.classList.add('btn-danger');
+            }
+        });
+    });
+    
+    // Adjust the overlay to match the image size
+    window.addEventListener('load', function() {
+        const image = document.querySelector('.analyzed-image');
+        const overlay = document.getElementById('affected-areas-overlay');
+        
+        // Scale factor calculation (if the image is resized by the browser)
+        const scaleFactor = image.clientWidth / image.naturalWidth;
+        
+        // Apply the scale factor to the affected areas
+        document.querySelectorAll('.affected-area-highlight').forEach(area => {
+            const left = parseFloat(area.style.left) * scaleFactor;
+            const top = parseFloat(area.style.top) * scaleFactor;
+            const width = parseFloat(area.style.width) * scaleFactor;
+            const height = parseFloat(area.style.height) * scaleFactor;
+            
+            area.style.left = left + 'px';
+            area.style.top = top + 'px';
+            area.style.width = width + 'px';
+            area.style.height = height + 'px';
+        });
+    });
+</script>
+{% endblock %}
