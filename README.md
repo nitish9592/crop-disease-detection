@@ -1,4 +1,4 @@
-# Crop Disease Detection System
+git# Crop Disease Detection System
 
 A web-based crop disease detection system that analyzes plant images to identify diseases and provide information about treatment and prevention.
 
